@@ -1,4 +1,4 @@
-# reddit-information-retrieval
+# Reddit Information Retrieval
 
 This project explores an innovative approach to indexing and querying Reddit data using both traditional Lucene indexing and advanced BERT embeddings, integrated with Faiss for efficient similarity search. The project demonstrates the differences between sparse and dense indexing methods in handling information retrieval tasks.
 
