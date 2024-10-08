@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Form</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card {
+            margin-top: 50px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            background-color: #007bff;
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .form-control, .form-check-label {
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            Information Retrieval Project Part 2 Group 5
+        </div>
+        <div class="card-body">
+            <h2 class="card-title">Search Form</h2>
+            <form id="searchForm" action="/search" method="POST">
+                <div class="form-group d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <label for="queryText">Query Text</label>
+                        <input type="text" class="form-control" id="queryText" name="query" placeholder="Enter query">
+                    </div>
+                    <div id="spinner" class="spinner-border ml-3" role="status" style="display: none;">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="form-group row ml-5">
+                        <label class="mr-5 ml-3">Indexing Option</label>
+                        <div class="form-check pr-5">
+                            <input class="form-check-input" type="radio" name="indexingOption" id="sparseIndexing"
+                                   value="sparse" checked>
+                            <label class="form-check-label" for="sparseIndexing">
+                                Sparse
+                            </label>
+                        </div>
+                        <div class="form-check pr-5">
+                            <input class="form-check-input" type="radio" name="indexingOption" id="denseIndexing"
+                                   value="dense">
+                            <label class="form-check-label" for="denseIndexing">
+                                Dense
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group row ml-5">
+                        <label for="numberOfResults" class="col-form-label col-8">Number of Returned Results</label>
+                        <div class="col-4">
+                            <input type="number" class="form-control" name="numberOfResults" id="numberOfResults"
+                                   value="5" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+    </div>
+    <div id="resultBlock" class="card mt-5 p-2" style="display: none">
+        <div class="card-header">Retrieved Results</div>
+        <div id="results"></div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#searchForm').submit(function (event) {
+            event.preventDefault();  // Prevent the default form submission
+
+            // Show spinner
+            $('#spinner').show();
+
+            // Perform an AJAX post request
+            $.ajax({
+                type: 'POST',
+                url: '/search',
+                data: $(this).serialize(),  // Serialize form data for submission
+                success: function (response) {
+                    // Clear previous results
+                    $('#results').empty();
+
+                    // Check if there are results
+                    if (response.results && response.results.length > 0) {
+                        // Iterate over each result and append it to the results div
+                        response.results.forEach(function (post) {
+                            var postHtml = `
+                                    <div class="result-item mb-1">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title"><a href="https://www.reddit.com${post.permalink}" target="_blank">${post.title}</a></h5>
+                                                <h6 class="card-subtitle mb-2 text-muted">Score: ${post.score}</h6>
+                                                <p class="card-text">${post.selftext || "No text content"}</p>
+                                                <p class="card-text"><b>First comment:</b> ${post.comments.length > 0 ? post.comments[0] : "No comments"}</p>
+                                                <a href="${post.url}" target="_blank" class="card-link">Link to post</a>
+                                                <a href="https://www.reddit.com${post.permalink}" target="_blank" class="card-link">More comments</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            $('#results').append(postHtml);
+                        });
+                    } else {
+                        $('#results').append('<div>No results found.</div>');
+                    }
+                    document.getElementById('resultBlock').style.display = "block";
+                    $('#spinner').hide();  // Hide spinner on success
+                },
+                error: function (xhr, status, error) {
+                    // Handle errors
+                    $('#results').empty();
+                    $('#results').append('<div>Error retrieving results.</div>');
+                    $('#spinner').hide();  // Hide spinner on error
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
